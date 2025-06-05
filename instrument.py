@@ -12,7 +12,7 @@ from docling.document_converter import DocumentConverter, PdfFormatOption
 os.makedirs("extracted_data", exist_ok=True)
 os.makedirs("extracted_data/pictures", exist_ok=True)
 
-# === Setup pipeline options with OCR and hierarchical chunking ===
+# === Setup pipeline options ===
 ocr_options = TesseractCliOcrOptions(force_full_page_ocr=True)
 
 pipeline_options = PdfPipelineOptions(
@@ -23,7 +23,7 @@ pipeline_options = PdfPipelineOptions(
     generate_picture_images=True,
     ocr_languages=["eng", "hin"],
     ocr_options=ocr_options,
-    chunking_mode="advanced"  # ✅ This enables hierarchical chunking
+    chunking_mode="advanced"  #  This enables hierarchical chunking
 )
 
 # === Create the document converter ===
@@ -41,9 +41,9 @@ try:
     markdown_text = doc.export_to_markdown()
     with open("extracted_data/summary.md", "w", encoding="utf-8") as f:
         f.write(markdown_text)
-    print("✅ Markdown summary saved to extracted_data/summary.md")
+    print(" Markdown summary saved to extracted_data/summary.md")
 except Exception as e:
-    print("❌ Markdown export failed:", e)
+    print(" Markdown export failed:", e)
 
 # === Export extracted images ===
 for idx, picture in enumerate(doc.pictures):
@@ -52,36 +52,15 @@ for idx, picture in enumerate(doc.pictures):
         img_path = f"extracted_data/pictures/picture_{idx}.png"
         image.save(img_path)
     else:
-        print(f"⚠️ Picture {idx} has no image data.")
+        print(f" Picture {idx} has no image data.")
 
-# === Two-Column Layout Detection ===
-from collections import defaultdict
 
-def group_by_columns(text_items, column_threshold=300):
-    columns = defaultdict(list)
-    for item in text_items:
-        if hasattr(item, "bbox") and item.bbox:
-            column_key = "left" if item.bbox.l < column_threshold else "right"
-            columns[column_key].append(item)
-    return columns
 
-try:
-    columns = group_by_columns(doc.texts)
-    columned_output = {
-        "left_column": [t.text.strip() for t in columns["left"]],
-        "right_column": [t.text.strip() for t in columns["right"]]
-    }
-    with open("extracted_data/columned_text.json", "w", encoding="utf-8") as f:
-        json.dump(columned_output, f, indent=2, ensure_ascii=False)
-    print("✅ Two-column layout text saved to extracted_data/columned_text.json")
-except Exception as e:
-    print("❌ Two-column layout detection failed:", e)
-
-# === ✅ Multimodal JSON Export (Docling's built-in) ===
+# ===  Multimodal JSON Export (Docling's built-in) ===
 try:
     multimodal_dict = doc.export_to_dict()
     with open("extracted_data/multimodal.json", "w", encoding="utf-8") as f:
         json.dump(multimodal_dict, f, indent=2, ensure_ascii=False)
-    print("✅ Multimodal JSON saved to extracted_data/multimodal.json")
+    print(" Multimodal JSON saved to extracted_data/multimodal.json")
 except Exception as e:
-    print("❌ Multimodal export failed:", e)
+    print(" Multimodal export failed:", e)
